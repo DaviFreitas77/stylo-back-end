@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductSize;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 
 class ProductController extends Controller
@@ -16,7 +17,6 @@ class ProductController extends Controller
             'name' => ['required', 'string'],
             'description' => ['required', 'string'],
             'price' => ['required', 'numeric'],
-            'lastPrice' => ['required', 'numeric'],
             'idCategory' => ['required', 'int'],
             'image' => ['required', 'string']
         ]);
@@ -27,8 +27,9 @@ class ProductController extends Controller
         $product->lastPrice = $request->lastPrice;
         $product->fkCategory = $request->idCategory;
         $product->image = $request->image;
-        $colors = json_decode($request->colors);
-        $sizes = json_decode($request->sizes);
+        $product->news = $request->news;
+        $colors = $request->colors;
+        $sizes =  $request->sizes;
         $product->save();
 
         foreach ($colors as $chave) {
@@ -45,5 +46,44 @@ class ProductController extends Controller
             $productSize->save();
         }
         return response()->json(['message' => "Produto cadastrado"], 201);
+    }
+
+    public function fetchProduct()
+    {
+        $products = Product::with(['category', 'colors', 'sizes'])->get();
+
+        $result = $products->map(function ($product) {
+            return [
+                "id" => $product->id,
+                "name" => $product->name,
+                "price" => $product->price,
+                "lastPrice" => $product->lastPrice,
+                "image" => $product->image,
+                "category" => $product->category,
+                "colors" => $product->colors->map(function ($color) {
+                    return [
+                        "id" => $color->id,
+                        "name" => $color->name,
+                    ];
+                }),
+                "sizes" => $product->sizes->map(function ($size) {
+                    return [
+                        "id" => $size->id,
+                        "name" => $size->name,
+                    ];
+                })
+            ];
+        });
+
+
+
+        return response()->json($result);
+    }
+
+    public function featuredProducts()
+    {
+        $product = Product::where('news', '=', '1')->get();
+
+        return response()->json($product);
     }
 }

@@ -22,4 +22,11 @@ class SizeController extends Controller
 
         return response()->json(['message' => 'tamanho criado']);
     }
+
+    public function fetchSize(){
+        $sizes = Size::all();
+
+        return response()->json($sizes);
+        
+    }
 }

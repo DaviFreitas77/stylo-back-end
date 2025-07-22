@@ -15,5 +15,10 @@ Route::post('/registerSize',[SizeController::class,'createSize']);
 
 
 
+Route::get('/products', [ProductController::class, 'fetchProduct']);
 Route::get('/categories', [CategoryController::class, 'fetchCategory']);
+Route::get('/colors', [ColorController::class, 'fetchColor']);
+Route::get('/sizes', [SizeController::class, 'fetchSize']);
+Route::get('/productFeatured', [ProductController::class, 'featuredProducts']);
+
 

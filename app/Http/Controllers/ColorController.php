@@ -22,4 +22,11 @@ class ColorController extends Controller
 
         return response()->json((['message' => 'cor criada com sucesso']));
     }
+
+    public function fetchColor(){
+        $colors = Colors::all();
+
+        
+        return response()->json($colors);
+    }
 }
