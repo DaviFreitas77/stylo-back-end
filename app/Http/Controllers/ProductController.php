@@ -86,4 +86,39 @@ class ProductController extends Controller
 
         return response()->json($product);
     }
+
+    public function fetchProductId($id)
+    {
+        $product = Product::with(['category', 'colors', 'sizes'])->where('id', $id)->first();
+
+        $result = [
+
+            "id" => $product->id,
+            "name" => $product->name,
+            "price" => $product->price,
+            "lastPrice" => $product->lastPrice,
+            "image" => $product->image,
+            "description" => $product->description,
+            "colors" => $product->colors->map(function($colors){
+                return[
+                 "id" => $colors->id,
+                 "name" => $colors->name   
+                ];
+            }),
+            "sizes" => $product->sizes->map(function($sizes){
+                return [
+                    "id" => $sizes->id,
+                    "name" => $sizes->name,
+                ];
+            })
+
+        ];
+
+
+        if (!$product) {
+            return response()->json(['error' => 'Produto não encontrado'], 404);
+        }
+
+        return response()->json($result);
+    }
 }
