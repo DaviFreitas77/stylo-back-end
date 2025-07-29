@@ -19,7 +19,7 @@ class ProductController extends Controller
             'price' => ['required', 'numeric'],
             'idCategory' => ['required', 'int'],
             'image' => ['required', 'string']
-        ]);
+        ]); 
         $product = new Product;
         $product->name = $request->name;
         $product->description = $request->description;
