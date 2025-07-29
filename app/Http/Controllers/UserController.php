@@ -44,6 +44,15 @@ class UserController extends Controller
     {
         $credentials  = $request->only("email", "password");
 
+        $emailExisting = User::where("email", $request->email)->first();
+
+        if ($emailExisting && $emailExisting->password === null) {
+            return response()->json([
+                'message' => 'Este e-mail está vinculado a um login com Google.'
+            ], 403);
+        }
+
+
         if (!Auth::attempt($credentials)) {
             abort(401, "credenciais invalidas");
         }
@@ -76,10 +85,16 @@ class UserController extends Controller
 
             $decoded = JWT::decode($token, $keys);
 
-            $emailExisting = User::where('email', $decoded->email)->first();
+            $user = User::where('email', $decoded->email)->first();
 
-            if ($emailExisting) {
-                return response()->json(["message" => "email ja cadastrado"], 400);
+            if ($user && $user->password === null) {
+                Auth::login($user);
+                $token = $user->createToken('auth_token')->plainTextToken;
+                return response()->json([
+                    'token' => $token,
+                    'token_type' => 'Bearer',
+                    'user' => $user,
+                ]);
             }
 
             $user = new User;
@@ -87,7 +102,7 @@ class UserController extends Controller
             $user->name = $decoded->name;
             $user->role = "user";
             $user->save();
-            
+
 
             $tokenJwt = $user->createToken('auth_token')->plainTextToken;
             return response()->json([
