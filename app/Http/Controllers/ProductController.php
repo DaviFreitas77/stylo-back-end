@@ -13,13 +13,18 @@ class ProductController extends Controller
 {
     public function createProduct(Request $request)
     {
+
+        if ($request->user()->role !== 'adm') {
+            return response()->json(['error' => 'Acesso não autorizado'], 403);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string'],
             'description' => ['required', 'string'],
             'price' => ['required', 'numeric'],
             'idCategory' => ['required', 'int'],
             'image' => ['required', 'string']
-        ]); 
+        ]);
         $product = new Product;
         $product->name = $request->name;
         $product->description = $request->description;
@@ -99,13 +104,13 @@ class ProductController extends Controller
             "lastPrice" => $product->lastPrice,
             "image" => $product->image,
             "description" => $product->description,
-            "colors" => $product->colors->map(function($colors){
-                return[
-                 "id" => $colors->id,
-                 "name" => $colors->name   
+            "colors" => $product->colors->map(function ($colors) {
+                return [
+                    "id" => $colors->id,
+                    "name" => $colors->name
                 ];
             }),
-            "sizes" => $product->sizes->map(function($sizes){
+            "sizes" => $product->sizes->map(function ($sizes) {
                 return [
                     "id" => $sizes->id,
                     "name" => $sizes->name,
