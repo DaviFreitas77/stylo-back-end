@@ -25,16 +25,25 @@ class UserController extends Controller
             "name.required" => "o nome é obrigatório",
             "email.required" => "o email é obrigatório",
             "password.required" => "a senha é obrigatório",
-            "email.unique" => "este email ja possui uma conta",
+            "email.unique" => "email ja vinculado a uma conta!",
         ]);
 
         $user = new User;
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
+        $user->role = "user";
         $user->save();
 
-        return response()->json(["message" => "Cadastrado com sucesso"], 201);
+        Auth::login($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            "message" => "conta criada com sucesso,redirecionando...",
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ], 201);
     }
 
 
