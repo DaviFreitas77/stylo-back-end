@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $table = 'products';
-    protected $fillable = ["name", "description", "price", "lastPrice","fkCategory","news"];
+    protected $fillable = ["name", "description", "price", "lastPrice", "fkCategory", "news"];
     public $timestamps = false;
 
 
@@ -15,14 +15,8 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class, 'fkCategory');
     }
-
-    public function colors()
+    public function variations()
     {
-        return $this->belongsToMany(Colors::class, 'product_colors', 'fkProduct', 'fkColor');
-    }
-
-    public function sizes()
-    {
-        return  $this->belongsToMany(Size::class, 'product_sizes', 'fkProduct', 'fkSize');
+        return $this->hasMany(ProductVariacoes::class, 'fkProduto')->with(['color', 'size']);
     }
 }

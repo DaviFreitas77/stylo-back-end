@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("name");
             $table->string("description");
             $table->decimal("price",10,2);
-            $table->decimal("lastPrice",10,2);
+            $table->decimal("lastPrice",10,2)->nullable();
             $table->unsignedInteger('fkCategory');
             $table->string('image');
             $table->boolean('news');

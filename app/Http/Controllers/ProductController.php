@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductSize;
+use App\Models\ProductVariacoes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +24,7 @@ class ProductController extends Controller
             'description' => ['required', 'string'],
             'price' => ['required', 'numeric'],
             'idCategory' => ['required', 'int'],
-            'image' => ['required', 'string']
+
         ]);
         $product = new Product;
         $product->name = $request->name;
@@ -31,31 +32,27 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->lastPrice = $request->lastPrice;
         $product->fkCategory = $request->idCategory;
-        $product->image = $request->image;
         $product->news = $request->news;
-        $colors = $request->colors;
-        $sizes =  $request->sizes;
+        $variation = $request->variation;
         $product->save();
 
-        foreach ($colors as $chave) {
-            $productColor = new ProductColor;
-            $productColor->fkProduct = $product->id;
-            $productColor->fkColor = $chave;
-            $productColor->save();
-        };
-
-        foreach ($sizes as $chave) {
-            $productSize  = new ProductSize;
-            $productSize->fkProduct = $product->id;
-            $productSize->fkSize = $chave;
-            $productSize->save();
+        foreach ($variation as $productVariation) {
+            foreach ($productVariation['sizes'] as $size) {
+                $variations = new ProductVariacoes;
+                $variations->fkProduto = $product->id;
+                $variations->fkColor = $productVariation['colorId'];
+                $variations->image = $productVariation['imageUrl'];
+                $variations->fkSize = $size;
+                $variations->save();
+            }
         }
+
         return response()->json(['message' => "Produto cadastrado"], 201);
     }
 
     public function fetchProduct()
     {
-        $products = Product::with(['category', 'colors', 'sizes'])->get();
+        $products = Product::with(['category', 'variations.color', 'variations.size','variations'])->get();
 
         $result = $products->map(function ($product) {
             return [
@@ -63,38 +60,50 @@ class ProductController extends Controller
                 "name" => $product->name,
                 "price" => $product->price,
                 "lastPrice" => $product->lastPrice,
-                "image" => $product->image,
+                'description' => $product->description,
                 "category" => $product->category,
-                "colors" => $product->colors->map(function ($color) {
+                 "image" =>$product->variations->first()->image,
+                "variations" => $product->variations->map(function ($variation) {
                     return [
-                        "id" => $color->id,
-                        "name" => $color->name,
+                        "id" => $variation->id,
+                        "image" => $variation->image,
+                        "color" => [
+                            "id" => $variation->color->id ?? null,
+                            "name" => $variation->color->name ?? null,
+                        ],
+                        "size" => [
+                            "id" => $variation->size->id ?? null,
+                            "name" => $variation->size->name ?? null,
+                        ],
                     ];
                 }),
-                "sizes" => $product->sizes->map(function ($size) {
-                    return [
-                        "id" => $size->id,
-                        "name" => $size->name,
-                    ];
-                })
             ];
         });
-
 
 
         return response()->json($result);
     }
 
     public function featuredProducts()
-    {
-        $product = Product::where('news', '=', '1')->get();
+    {   
+        $product = Product::with(['variations'])->where('news', '=' , '1')->get();
+
+        return $product->map(function($product){
+            return[
+                "id" => $product->id,
+                "name" =>$product->name,
+                'price' => $product->price,
+                'lastPrice'  => $product->lastPrice,
+                "image" =>$product->variations->first()->image,
+            ];
+        });
 
         return response()->json($product);
     }
 
     public function fetchProductId($id)
     {
-        $product = Product::with(['category', 'colors', 'sizes'])->where('id', $id)->first();
+        $product = Product::with(['category', 'variations.color', 'variations.size'])->where('id', $id)->first();
 
         $result = [
 
@@ -102,20 +111,21 @@ class ProductController extends Controller
             "name" => $product->name,
             "price" => $product->price,
             "lastPrice" => $product->lastPrice,
-            "image" => $product->image,
-            "description" => $product->description,
-            "colors" => $product->colors->map(function ($colors) {
-                return [
-                    "id" => $colors->id,
-                    "name" => $colors->name
-                ];
-            }),
-            "sizes" => $product->sizes->map(function ($sizes) {
-                return [
-                    "id" => $sizes->id,
-                    "name" => $sizes->name,
-                ];
-            })
+            'category' => $product->category->name,
+            'description' =>$product->description,
+            'variations' => $product->variations
+            ->groupBy(fn($variation) => $variation->color->id)
+            ->map(fn($variationsByColor) => [
+                "image" => $variationsByColor->first()->image,
+                "color" => [
+                    "id"   => $variationsByColor->first()->color->id,
+                    "name" => $variationsByColor->first()->color->name,
+                    ],
+                    "sizes" => $variationsByColor->map(fn($v) => [
+                        "id"   => $v->size->id,
+                        "name" => $v->size->name,
+                    ])->values(),
+                ])->values(),
 
         ];
 

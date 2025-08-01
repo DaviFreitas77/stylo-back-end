@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('fkProduto');
             $table->unsignedInteger('fkColor');
             $table->unsignedInteger('fkSize');
-            $table->integer('stock');
+            $table->string('image');
 
             $table->foreign('fkProduto')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('fkColor')->references('id')->on('colors')->onDelete('restrict');
