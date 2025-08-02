@@ -52,7 +52,7 @@ class ProductController extends Controller
 
     public function fetchProduct()
     {
-        $products = Product::with(['category', 'variations.color', 'variations.size','variations'])->get();
+        $products = Product::with(['category', 'variations.color', 'variations.size', 'variations'])->get();
 
         $result = $products->map(function ($product) {
             return [
@@ -62,7 +62,7 @@ class ProductController extends Controller
                 "lastPrice" => $product->lastPrice,
                 'description' => $product->description,
                 "category" => $product->category,
-                 "image" =>$product->variations->first()->image,
+                "image" => $product->variations->first()->image,
                 "variations" => $product->variations->map(function ($variation) {
                     return [
                         "id" => $variation->id,
@@ -85,16 +85,17 @@ class ProductController extends Controller
     }
 
     public function featuredProducts()
-    {   
-        $product = Product::with(['variations'])->where('news', '=' , '1')->get();
+    {
+        $product = Product::with(['variations'])->where('news', '=', '1')->get();
 
-        return $product->map(function($product){
-            return[
+        return $product->map(function ($product) {
+            return [
                 "id" => $product->id,
-                "name" =>$product->name,
+                "name" => $product->name,
+                'category' => $product->category,
                 'price' => $product->price,
                 'lastPrice'  => $product->lastPrice,
-                "image" =>$product->variations->first()->image,
+                "image" => $product->variations->first()->image,
             ];
         });
 
@@ -112,14 +113,14 @@ class ProductController extends Controller
             "price" => $product->price,
             "lastPrice" => $product->lastPrice,
             'category' => $product->category->name,
-            'description' =>$product->description,
+            'description' => $product->description,
             'variations' => $product->variations
-            ->groupBy(fn($variation) => $variation->color->id)
-            ->map(fn($variationsByColor) => [
-                "image" => $variationsByColor->first()->image,
-                "color" => [
-                    "id"   => $variationsByColor->first()->color->id,
-                    "name" => $variationsByColor->first()->color->name,
+                ->groupBy(fn($variation) => $variation->color->id)
+                ->map(fn($variationsByColor) => [
+                    "image" => $variationsByColor->first()->image,
+                    "color" => [
+                        "id"   => $variationsByColor->first()->color->id,
+                        "name" => $variationsByColor->first()->color->name,
                     ],
                     "sizes" => $variationsByColor->map(fn($v) => [
                         "id"   => $v->size->id,
@@ -133,6 +134,46 @@ class ProductController extends Controller
         if (!$product) {
             return response()->json(['error' => 'Produto não encontrado'], 404);
         }
+
+        return response()->json($result);
+    }
+
+    public function recomendation($id)
+    {
+
+
+        $product = Product::with(['variations'])->where('id', '=', $id)->first();
+
+        $category = $product->category->id;
+
+        $products = Product::with('variations')->where('fkCategory', $category)->where("id", "!=", $id)->limit(6)->get();
+
+        if ($products->isEmpty()) {
+            $allProduct = Product::with("variations")->limit(6)->get();
+            $result = $allProduct->map(function ($prod) {
+                return  [
+                    'id' => $prod->id,
+                    "name" => $prod->name,
+                    "price" => $prod->price,
+                    "lastPrice" => $prod->lastPrice,
+                    "image" => $prod->variations->first()->image,
+                    'category' => $prod->category,
+
+                ];
+            });
+            return response()->json($result);
+        }
+        $result = $products->map(function ($prod) {
+            return  [
+                'id' => $prod->id,
+                "name" => $prod->name,
+                "price" => $prod->price,
+                "lastPrice" => $prod->lastPrice,
+                "image" => $prod->variations->first()->image,
+                'category' => $prod->category,
+
+            ];
+        });
 
         return response()->json($result);
     }
