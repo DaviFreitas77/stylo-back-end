@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Size extends Model
 {
-     protected $table = 'Sizes';
+     protected $table = 'sizes';
    protected $fillable = ['name'];
    public $timestamps = false;
 }
