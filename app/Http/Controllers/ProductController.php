@@ -39,7 +39,7 @@ class ProductController extends Controller
         foreach ($variation as $productVariation) {
             foreach ($productVariation['sizes'] as $size) {
                 $variations = new ProductVariacoes;
-                $variations->fkProduto = $product->id;
+                $variations->fkProduct = $product->id;
                 $variations->fkColor = $productVariation['colorId'];
                 $variations->image = $productVariation['imageUrl'];
                 $variations->fkSize = $size;
