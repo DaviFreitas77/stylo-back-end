@@ -62,7 +62,7 @@ class ProductController extends Controller
                 "lastPrice" => $product->lastPrice,
                 'description' => $product->description,
                 "category" => $product->category,
-                "image" => $product->variations->first()->image,
+                "image" => $product->variations->first()?->image,
                 "variations" => $product->variations->map(function ($variation) {
                     return [
                         "id" => $variation->id,

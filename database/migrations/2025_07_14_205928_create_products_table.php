@@ -18,7 +18,6 @@ return new class extends Migration
             $table->decimal("price",10,2);
             $table->decimal("lastPrice",10,2)->nullable();
             $table->unsignedInteger('fkCategory');
-            $table->string('image');
             $table->boolean('news');
 
             $table->foreign('fkCategory')->references('id')->on('categories')->onDelete('cascade');
