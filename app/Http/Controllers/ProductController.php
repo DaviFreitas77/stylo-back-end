@@ -21,7 +21,6 @@ class ProductController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string'],
-            'description' => ['required', 'string'],
             'price' => ['required', 'numeric'],
             'idCategory' => ['required', 'int'],
 
