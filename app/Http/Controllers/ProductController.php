@@ -37,7 +37,7 @@ class ProductController extends Controller
         $product->save();
 
         foreach ($variation as $productVariation) {
-            
+
             foreach ($productVariation['sizes'] as $size) {
                 $variations = new ProductVariacoes;
                 $variations->fkProduto = $product->id;
@@ -177,5 +177,17 @@ class ProductController extends Controller
         });
 
         return response()->json($result);
+    }
+    public function delProduct($id)
+    {
+        $product = Product::find($id);
+
+        if(!$product){
+            return response()->json(['message' => "produto não existe"]);
+        }
+
+        $product->delete();
+
+        return response()->json(['message' => "produto deletado"]);
     }
 }

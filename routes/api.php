@@ -22,6 +22,7 @@ Route::get('/sizes', [SizeController::class, 'fetchSize']);
 Route::get('/productFeatured', [ProductController::class, 'featuredProducts']);
 Route::get('/product/{id}', [ProductController::class, 'fetchProductId']);
 Route::get('/recomendatation/{id}', [ProductController::class, 'recomendation']);
+Route::delete('product/{id}', [ProductController::class, 'delProduct']);
 
 
 Route::prefix('adm')->middleware('auth:sanctum')->group(function () {
