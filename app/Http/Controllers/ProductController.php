@@ -37,9 +37,10 @@ class ProductController extends Controller
         $product->save();
 
         foreach ($variation as $productVariation) {
+            
             foreach ($productVariation['sizes'] as $size) {
                 $variations = new ProductVariacoes;
-                $variations->fkProduct = $product->id;
+                $variations->fkProduto = $product->id;
                 $variations->fkColor = $productVariation['colorId'];
                 $variations->image = $productVariation['imageUrl'];
                 $variations->fkSize = $size;
@@ -62,7 +63,7 @@ class ProductController extends Controller
                 "lastPrice" => $product->lastPrice,
                 'description' => $product->description,
                 "category" => $product->category,
-                "image" => $product->variations->first()?->image,
+                "image" => $product->variations->first()->image,
                 "variations" => $product->variations->map(function ($variation) {
                     return [
                         "id" => $variation->id,
